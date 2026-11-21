@@ -60,14 +60,6 @@ def parse_price_line(line: str) -> list[tuple[str, float]]:
         -> [("Each", 8.50)]
 
     A price with no size in front of it is "Each".
-
-    How to build it:
-
-    - `re.findall(r"([SML])?\s*(\$[\d.,]+)", line)` finds every price, and the
-    size letter in front of it if there is one. Each match is a tuple
-    (size, price), with size "" when there is none.
-    - Loop over the matches. Use "Each" when size is "", and `clean_price()` on the
-    price. Return the list of pairs.
     """
     match = re.findall(r"([SML])?\s*(\$[\d.,]+)", line)
     output = []
