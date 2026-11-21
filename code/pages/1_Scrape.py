@@ -15,7 +15,7 @@ cafes = st.multiselect(
     key="cafes"
 )
 
-#Choice Button
+# Choice Button
 if st.button("Scrape", key="scrape"):
     if cafes:
         with st.spinner("Scraping menus..."):
@@ -34,7 +34,7 @@ if not os.path.exists(MENUS_FILE):
     st.info("Click Scrape to collect the menus.")
     st.stop()
 
-#load data
+# load data
 menus = pd.read_csv(MENUS_FILE)
 
 theirs = menus[menus["cafe"] != OUR_CAFE]

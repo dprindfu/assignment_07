@@ -124,7 +124,7 @@ def match_band(score: float) -> str:
 
     if score >= REVIEW:
         return "review"
-    
+
     return "unlikely"
 
 
