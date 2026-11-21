@@ -27,7 +27,6 @@ def menus_table(rows: list[dict]) -> pd.DataFrame:
     Extra keys a scraper might add are left out. An empty list gives an empty
     table that still has the five columns.
     """
-    # TODO: your code here
     menus = pd.DataFrame(rows, columns=MENU_COLUMNS)
     menus = menus.reindex(columns=[
         "cafe", "category", "item", "size", "price"
@@ -42,7 +41,6 @@ def add_kinds(menus: pd.DataFrame, categories: pd.DataFrame) -> pd.DataFrame:
     Every row is kept, in order (a one-sided merge). A category that is not in
     `categories` gets a missing kind. `menus` itself is not changed.
     """
-    # TODO: your code here
     merged = menus.merge(
         categories,
         how="left",

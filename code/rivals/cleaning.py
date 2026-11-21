@@ -50,7 +50,25 @@ def clean_card_lines(text: str) -> list[str]:
 
 
 def parse_price_line(line: str) -> list[tuple[str, float]]:
+    """Every (size, price) pair on a price line.
 
+        parse_price_line("S $5.05 · L $6.25")
+        -> [("S", 5.05), ("L", 6.25)]
+        parse_price_line("S $2.15 · M $2.60 · L $3.05")
+        -> [("S", 2.15), ("M", 2.60), ("L", 3.05)]
+        parse_price_line("$8.50")
+        -> [("Each", 8.50)]
+
+    A price with no size in front of it is "Each".
+
+    How to build it:
+
+    - `re.findall(r"([SML])?\s*(\$[\d.,]+)", line)` finds every price, and the
+    size letter in front of it if there is one. Each match is a tuple
+    (size, price), with size "" when there is none.
+    - Loop over the matches. Use "Each" when size is "", and `clean_price()` on the
+    price. Return the list of pairs.
+    """
     match = re.findall(r"([SML])?\s*(\$[\d.,]+)", line)
     output = []
 
