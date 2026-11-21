@@ -1,8 +1,1 @@
-Write your reflection here.
-
-See reflection.md for what makes a good reflection — be specific, use the
-terminology from this assignment (HTML element, CSS selector, class and id
-selectors, sibling selector, inner_text, attribute, headless browser, waiting for
-JavaScript, crawling, pagination, read_html, melt, fuzzy matching, normalization,
-threshold, human in the loop, merge indicator, gap analysis), and make it
-actionable.
+In this assignment, I learned how to account for different formattings of webpages in the web scraping process and also a bit more about HTML in general and how pages are layed out with different tags. I also learned about applying "fuzzy matching" when two names represent the same thing but might be spelled out slightly differently. This matching isn't always perfect and is why we need input from humans about which wordings are equivalent to make the system as accurate as possible. This also gave me process on crafting data pipelines to funnel data from websites into a dashboard useful for a stakeholder.

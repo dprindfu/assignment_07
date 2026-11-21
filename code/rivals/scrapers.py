@@ -49,8 +49,22 @@ def scrape_lakeshore(page) -> list[dict]:
           category, card.inner_text())` — add its rows to your list.
     - Return all the rows in one list. (The cards have photos; you don't need them.)
     """
-    # TODO: your code here
-    pass
+    page.goto(cafe_url("Lakeshore Lattes"))
+    rows_list = []
+
+    headings = page.query_selector_all("h2.menu-section__title")
+
+    for heading in headings:
+        category = heading.inner_text()
+
+        grid = heading.query_selector("~ div.menu-grid")
+
+        cards = grid.query_selector_all("article.menu-card")
+
+        for card in cards:
+            rows_list.extend(card_rows("Lakeshore Lattes", category, card.inner_text()))
+
+    return rows_list
 
 
 def scrape_hilltop(page) -> list[dict]:
@@ -75,8 +89,35 @@ def scrape_hilltop(page) -> list[dict]:
       var_name="size", value_name="price"`.
     - Turn each melted row into a dict with the five keys; `clean_price()` the price.
     """
-    # TODO: your code here
-    pass
+    page.goto(cafe_url("Hilltop Grind"))
+
+    headings = page.query_selector_all("#menu h2")
+    tables = pd.read_html(StringIO(page.content()))
+
+    rows = []
+
+    for i in range(len(tables)):
+        category = headings[i].inner_text()
+
+        table = tables[i]
+        table = table.drop(columns="Description")
+
+        table = table.melt(
+            id_vars="Item",
+            var_name="size",
+            value_name="price"
+        )
+
+        for _, item in table.iterrows():
+            rows.append({
+                "cafe": "Hilltop Grind",
+                "category": category,
+                "item": item["Item"],
+                "size": item["size"],
+                "price": clean_price(item["price"])
+            })
+
+    return rows
 
 
 def scrape_canal(page, shop: str = CANAL_SHOP) -> list[dict]:
@@ -104,5 +145,59 @@ def scrape_canal(page, shop: str = CANAL_SHOP) -> list[dict]:
       (the text of `#item-category` before " · "), and one row per
       `#sizes tbody tr` — its two `td` cells are the size and the price.
     """
-    # TODO: your code here
-    pass
+    url = cafe_url("Canal Street Coffee")
+
+    page.goto(url)
+
+    page.get_by_label("Choose your shop").select_option(shop)
+    page.get_by_role("button", name="Show full menu").click()
+
+    page.wait_for_selector("a.result-card")
+
+    show_more = page.get_by_role("button", name="Show more")
+
+    while show_more.is_visible():
+        old_count = page.locator("a.result-card").count()
+
+        show_more.click()
+
+        page.wait_for_function(
+            "document.querySelectorAll('a.result-card').length > "
+            + str(old_count)
+        )
+
+    cards = page.query_selector_all("a.result-card")
+
+    links = []
+    for card in cards:
+        link = card.get_attribute("href")
+        links.append(link)
+
+    rows = []
+
+    for link in links:
+        page.goto(urljoin(url, link))
+
+        page.wait_for_selector("#sizes")
+
+        item = page.inner_text("#item-name")
+        category = page.inner_text("#item-category")
+        category = category.split(" · ")[0]
+
+        size_rows = page.query_selector_all("#sizes tbody tr")
+
+        for size_row in size_rows:
+            cells = size_row.query_selector_all("td")
+
+            size = cells[0].inner_text()
+            price = clean_price(cells[1].inner_text())
+
+            rows.append({
+                "cafe": "Canal Street Coffee",
+                "category": category,
+                "item": item,
+                "size": size,
+                "price": price
+            })
+
+    return rows

@@ -1,22 +1,3 @@
-"""
-menus.py — Part 1, Step 3: three scrapes and our own menu, as one dataset.
-
-The scrapers return lists of dicts in each café's own words. This step makes them
-one table everyone downstream can trust — the same columns for every café, and
-every category labelled a drink or a food:
-
-    cafe  category  kind  item  size  price
-
-(Every café uses the same sizes — S, M, L for drinks, "Each" for food — so there
-is nothing to translate.)
-
-Our own menu (data/salt_city_menu.csv) goes in the same table, under
-"Salt City Coffee", so comparing prices later is one table, not two.
-
-No walkthrough here: the docstrings say what each function returns, and
-tests/test_pipeline.py says how it is checked.
-"""
-
 import pandas as pd
 
 from .settings import (
@@ -40,33 +21,29 @@ def load_our_menu() -> pd.DataFrame:
 
 
 def menus_table(rows: list[dict]) -> pd.DataFrame:
-    """Scraped rows as a DataFrame with exactly these columns, in this order:
-    `cafe`, `category`, `item`, `size`, `price`.
-
-    Extra keys a scraper might add are left out. An empty list gives an empty
-    table that still has the five columns.
-    """
-    # TODO: your code here
-    pass
+    menus = pd.DataFrame(rows, columns=MENU_COLUMNS)
+    menus = menus.reindex(columns=[
+        "cafe", "category", "item", "size", "price"
+    ])
+    return menus
 
 
 def add_kinds(menus: pd.DataFrame, categories: pd.DataFrame) -> pd.DataFrame:
-    """`menus` plus a `kind` column ("drink" or "food"): each row's (`cafe`,
-    `category`) looked up in `categories` (data/categories.csv).
-
-    Every row is kept, in order (a one-sided merge). A category that is not in
-    `categories` gets a missing kind. `menus` itself is not changed.
-    """
-    # TODO: your code here
-    pass
+    merged = menus.merge(
+        categories,
+        how="left",
+        on=["cafe", "category"]
+    )
+    return merged
 
 
 def build_dataset(rival_rows: list[dict]) -> pd.DataFrame:
-    """The whole dataset: our menu first, then the rivals' rows, as one table.
+    menu = load_our_menu()
+    rivals = menus_table(rival_rows)
 
-    `pd.concat` our menu (`load_our_menu()`) with `menus_table(rival_rows)`, then
-    `add_kinds` with data/categories.csv. The columns are settings.MENU_COLUMNS,
-    in that order; plain index.
-    """
-    # TODO: your code here
-    pass
+    combined = pd.concat([menu, rivals], ignore_index=True)
+    categories = pd.read_csv(CATEGORIES_FILE)
+    dataset = add_kinds(combined, categories)
+    return dataset[
+        ["cafe", "category", "kind", "item", "size", "price"]
+    ].reset_index(drop=True)
